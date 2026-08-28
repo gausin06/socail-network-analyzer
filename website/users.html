@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Users</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <h2>Social Network</h2>
+
+    <a href="index.html">Dashboard</a>
+    <a href="users.html">Users</a>
+    <a href="graph.html">Graph</a>
+
+</div>
+
+<div class="content">
+
+    <h1>Users</h1>
+
+    <br>
+
+    <input
+    type="text"
+    id="searchBox"
+    placeholder="Search User by Name">
+
+    <button onclick="searchUser()">
+        Search
+    </button>
+
+    <button onclick="clearSearch()">
+        Reset
+    </button>
+
+    <br><br>
+
+    <div class="big-card">
+
+        <h3>Add New User</h3>
+
+        <div class="user-form">
+
+            <input
+            type="text"
+            id="userId"
+            placeholder="ID">
+
+            <input
+            type="text"
+            id="userName"
+            placeholder="Name">
+
+            <input
+            type="number"
+            id="userAge"
+            placeholder="Age">
+
+            <input
+            type="text"
+            id="userCity"
+            placeholder="City">
+
+            <button onclick="saveUser()">
+                Save User
+            </button>
+
+        </div>
+
+    </div>
+
+    <table id="userTable">
+
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>City</th>
+        </tr>
+
+        <tr>
+            <td>1</td>
+            <td>Gaurav</td>
+            <td>22</td>
+            <td>Delhi</td>
+        </tr>
+
+        <tr>
+            <td>2</td>
+            <td>Ravi</td>
+            <td>23</td>
+            <td>Mumbai</td>
+        </tr>
+
+        <tr>
+            <td>3</td>
+            <td>Khushi</td>
+            <td>24</td>
+            <td>Pune</td>
+        </tr>
+
+        <tr>
+            <td>4</td>
+            <td>Daksh</td>
+            <td>25</td>
+            <td>Jaipur</td>
+        </tr>
+
+        <tr>
+            <td>5</td>
+            <td>Riya</td>
+            <td>21</td>
+            <td>Jodhpur</td>
+        </tr>
+
+    </table>
+
+</div>
+
+<script>
+
+function addUser()
+{
+    document.getElementById("userId").focus();
+}
+
+async function saveUser()
+{
+    let id = document.getElementById("userId").value.trim();
+    let name = document.getElementById("userName").value.trim();
+    let age = document.getElementById("userAge").value.trim();
+    let city = document.getElementById("userCity").value.trim();
+
+    if(id === "" || name === "" || age === "" || city === "")
+    {
+        alert("Fill all fields");
+        return;
+    }
+
+    try
+    {
+        let response = await fetch(
+            "http://127.0.0.1:5000/add_user",
+            {
+                method: "POST",
+                headers:
+                {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id: id,
+                    name: name,
+                    age: age,
+                    city: city
+                })
+            }
+        );
+
+        if(!response.ok)
+        {
+            throw new Error("Failed to save user");
+        }
+
+        let result = await response.json();
+
+        alert(result.message);
+
+        document.getElementById("userId").value = "";
+        document.getElementById("userName").value = "";
+        document.getElementById("userAge").value = "";
+        document.getElementById("userCity").value = "";
+
+        loadUsers();
+    }
+    catch(error)
+    {
+        console.error(error);
+        alert("Unable to connect to server");
+    }
+}
+
+function searchUser()
+{
+    let searchText =
+        document.getElementById("searchBox")
+        .value
+        .toLowerCase();
+
+    let rows =
+        document.getElementById("userTable")
+        .getElementsByTagName("tr");
+
+    for(let i = 1; i < rows.length; i++)
+    {
+        let name =
+            rows[i]
+            .cells[1]
+            .innerText
+            .toLowerCase();
+
+        rows[i].style.display =
+            name.includes(searchText)
+            ? ""
+            : "none";
+    }
+}
+
+function clearSearch()
+{
+    document.getElementById("searchBox").value = "";
+
+    let rows =
+        document.getElementById("userTable")
+        .getElementsByTagName("tr");
+
+    for(let i = 1; i < rows.length; i++)
+    {
+        rows[i].style.display = "";
+    }
+}
+
+async function loadUsers()
+{
+    try
+    {
+        let response =
+            await fetch(
+                "http://127.0.0.1:5000/get_users"
+            );
+
+        if(!response.ok)
+        {
+            throw new Error("Failed to load users");
+        }
+
+        let users = await response.json();
+
+        let table =
+            document.getElementById("userTable");
+
+        table.innerHTML = `
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>City</th>
+                <th>Action</th>
+            </tr>
+        `;
+
+        users.forEach(user =>
+        {
+            let row = table.insertRow(-1);
+
+            row.insertCell(0).innerHTML = user.id;
+            row.insertCell(1).innerHTML = user.name;
+            row.insertCell(2).innerHTML = user.age;
+            row.insertCell(3).innerHTML = user.city;
+
+            row.insertCell(4).innerHTML =
+                `<button onclick="deleteUser('${user.id}')">
+                    Delete
+                </button>`;
+        });
+    }
+    catch(error)
+    {
+        console.error(error);
+        alert("Unable to load users");
+    }
+}
+
+async function deleteUser(id)
+{
+    if(!confirm("Are you sure you want to delete this user?"))
+    {
+        return;
+    }
+
+    try
+    {
+        let response = await fetch(
+            "http://127.0.0.1:5000/delete_user/" + id,
+            {
+                method: "DELETE"
+            }
+        );
+
+        if(!response.ok)
+        {
+            throw new Error("Delete failed");
+        }
+
+        loadUsers();
+    }
+    catch(error)
+    {
+        console.error(error);
+        alert("Unable to delete user");
+    }
+}
+
+window.onload = loadUsers;
+
+</script>
+</body> 
+
+</html>

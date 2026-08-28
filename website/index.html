@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Social Network Analyzer</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <h2>Social Network</h2>
+
+    <a href="index.html">Dashboard</a>
+    <a href="users.html">Users</a>
+    <a href="graph.html">Graph</a>
+
+</div>
+
+<div class="content">
+
+    <h1>Dashboard</h1>
+
+    <br>
+
+    <div class="cards">
+
+        <div class="card">
+
+            <h2>Users</h2>
+
+            <h1 id="userCount">
+                0
+            </h1>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Friendships</h2>
+
+            <h1 id="friendshipCount">
+                0
+            </h1>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Recommendations</h2>
+
+            <h1 id="recommendationCount">
+                0
+            </h1>
+
+        </div>
+
+    </div>
+
+    <div class="big-card">
+
+        <h2>Network Statistics</h2>
+
+        <br>
+
+        <p id="mostConnected">
+            Most Connected User: Loading...
+        </p>
+
+        <br>
+
+        <p id="components">
+            Connected Components: Loading...
+        </p>
+
+        <br>
+
+        <p id="averageFriends">
+            Average Friends/User: Loading...
+        </p>
+
+    </div>
+
+    <div class="big-card">
+
+        <h2>Project Overview</h2>
+
+        <br>
+
+        <p>
+
+            Social Network Analysis Platform implementing
+
+            BFS, DFS, Shortest Path and Friend Recommendation
+
+            Algorithms.
+
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+
+async function loadDashboard()
+{
+    try
+    {
+        let response =
+        await fetch(
+            "http://127.0.0.1:5000/dashboard_stats"
+        );
+
+        let data =
+        await response.json();
+
+        document
+        .getElementById(
+            "userCount"
+        )
+        .innerText =
+        data.users;
+
+        document
+        .getElementById(
+            "friendshipCount"
+        )
+        .innerText =
+        data.friendships;
+
+        document
+        .getElementById(
+            "recommendationCount"
+        )
+        .innerText =
+        data.recommendations || 0;
+
+        document
+        .getElementById(
+            "mostConnected"
+        )
+        .innerText =
+        "Most Connected User: " +
+        (data.most_connected || "N/A");
+
+        document
+        .getElementById(
+            "components"
+        )
+        .innerText =
+        "Connected Components: " +
+        (data.components || 1);
+
+        document
+        .getElementById(
+            "averageFriends"
+        )
+        .innerText =
+        "Average Friends/User: " +
+        (data.average_friends || 0);
+
+    }
+    catch(error)
+    {
+        console.error(error);
+
+        alert(
+            "Could not connect to Flask backend"
+        );
+    }
+}
+
+window.onload =
+loadDashboard;
+
+</script>
+
+</body>
+
+</html>

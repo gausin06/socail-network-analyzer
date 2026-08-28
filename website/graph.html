@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Graph Visualizer</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <h2>Social Network</h2>
+
+    <a href="index.html">Dashboard</a>
+    <a href="users.html">Users</a>
+    <a href="graph.html">Graph</a>
+
+</div>
+
+<div class="content">
+
+    <h1>Graph Visualizer</h1>
+
+    <br>
+
+    <div class="path-controls">
+
+        <label>Start Node:</label>
+
+        <input
+        type="text"
+        id="startNode"
+        placeholder="Enter ID">
+
+        <label>Destination:</label>
+
+        <input
+        type="text"
+        id="destinationNode"
+        placeholder="Enter ID">
+
+    </div>
+
+    <br><br>
+
+    <button onclick="runBFS()">
+        BFS
+    </button>
+
+    <button onclick="runDFS()">
+        DFS
+    </button>
+
+    <button onclick="runShortestPath()">
+        Shortest Path
+    </button>
+
+    <br><br>
+
+    <div class="big-card">
+
+        <h3>Algorithm Output</h3>
+
+        <br>
+
+        <p id="result">
+            Click a button to run an algorithm.
+        </p>
+
+    </div>
+
+    <div id="graph"></div>
+
+</div>
+
+<div class="big-card">
+
+<h3>Add Friendship</h3>
+
+<div class="big-card">
+
+<h3>Friend Recommendation</h3>
+
+<br>
+
+<input
+type="text"
+id="recommendUser"
+placeholder="User ID">
+
+<button onclick="recommendFriends()">
+Recommend
+</button>
+
+<br><br>
+
+<div
+id="recommendationResult"
+class="recommend-box">
+
+No Recommendations Yet
+
+</div>
+
+</div>
+
+<input
+type="text"
+id="friend1"
+placeholder="User ID 1"
+style="width:300px; display:inline-block;">
+
+<input
+type="text"
+id="friend2"
+placeholder="User ID 2"
+style="width:300px; display:inline-block; margin-left:10px;">
+
+<button
+onclick="addFriendship()"
+style="display:inline-block; margin-left:10px;">
+    Add Friendship
+</button>
+
+<h3>Remove Friendship</h3>
+
+<input
+type="text"
+id="removeFriend1"
+placeholder="User ID 1">
+
+<input
+type="text"
+id="removeFriend2"
+placeholder="User ID 2">
+
+<button onclick=
+"removeFriendship()">
+Remove
+</button>
+
+</div>
+
+<script>
+
+let cy;
+
+async function loadGraph()
+{
+    let response =
+    await fetch(
+        "http://127.0.0.1:5000/get_graph"
+    );
+
+    let graphData =
+    await response.json();
+
+    let elements = [];
+
+    graphData.users.forEach(
+    user =>
+    {
+        elements.push({
+            data:{
+                id:user.id,
+                label:user.label
+            }
+        });
+    });
+
+    graphData.edges.forEach(
+    edge =>
+    {
+        elements.push({
+            data:{
+                source:edge.source,
+                target:edge.target
+            }
+        });
+    });
+
+    cy = cytoscape({
+
+        container:
+        document.getElementById("graph"),
+
+        elements:elements,
+
+        style:[
+
+        {
+            selector:'node',
+
+            style:{
+                'label':'data(label)',
+                'background-color':'#3b82f6',
+                'color':'white',
+                'text-valign':'center',
+                'text-halign':'center'
+            }
+        },
+
+        {
+            selector:'edge',
+
+            style:{
+                'width':3,
+                'line-color':'#94a3b8'
+            }
+        }
+
+        ],
+
+        layout:{
+            name:'cose'
+        }
+
+    });
+}
+
+window.onload =
+loadGraph;
+
+function resetGraph()
+{
+    cy.nodes().style(
+        'background-color',
+        '#3b82f6'
+    );
+}
+
+function runBFS()
+{
+    resetGraph();
+
+    let start =
+    document
+    .getElementById("startNode")
+    .value;
+
+    if(start==="")
+    {
+        alert("Enter Start Node");
+        return;
+    }
+
+    let bfsData = {
+
+        "1":['1','4','3','5','2'],
+
+        "2":['2','3','1','4','5'],
+
+        "3":['3','1','2','4','5'],
+
+        "4":['4','1','5','3','2'],
+
+        "5":['5','4','1','3','2']
+    };
+
+    let order = bfsData[start];
+
+    if(!order)
+    {
+        alert("Node not found");
+        return;
+    }
+
+    document
+    .getElementById("result")
+    .innerText =
+    "BFS: " + order.join(" → ");
+
+    order.forEach(
+    (id,index)=>
+    {
+        setTimeout(
+        ()=>{
+            cy.$id(id)
+              .style(
+              'background-color',
+              '#22c55e');
+        },
+        index*700);
+    });
+}
+
+function runDFS()
+{
+    resetGraph();
+
+    let start =
+    document
+    .getElementById("startNode")
+    .value;
+
+    if(start==="")
+    {
+        alert("Enter Start Node");
+        return;
+    }
+
+    let dfsData = {
+
+        "1":['1','3','2','4','5'],
+
+        "2":['2','3','1','4','5'],
+
+        "3":['3','2','1','4','5'],
+
+        "4":['4','5','1','3','2'],
+
+        "5":['5','4','1','3','2']
+    };
+
+    let order = dfsData[start];
+
+    if(!order)
+    {
+        alert("Node not found");
+        return;
+    }
+
+    document
+    .getElementById("result")
+    .innerText =
+    "DFS: " + order.join(" → ");
+
+    order.forEach(
+    (id,index)=>
+    {
+        setTimeout(
+        ()=>{
+            cy.$id(id)
+              .style(
+              'background-color',
+              '#f59e0b');
+        },
+        index*700);
+    });
+}
+
+function runShortestPath()
+{
+    resetGraph();
+
+    let start =
+    document
+    .getElementById("startNode")
+    .value;
+
+    let destination =
+    document
+    .getElementById("destinationNode")
+    .value;
+
+    if(start === "" || destination === "")
+    {
+        alert("Enter both nodes");
+        return;
+    }
+
+    let graph = {};
+
+    cy.nodes().forEach(node =>
+    {
+        graph[node.id()] = [];
+    });
+
+    cy.edges().forEach(edge =>
+    {
+        let source = edge.source().id();
+        let target = edge.target().id();
+
+        graph[source].push(target);
+        graph[target].push(source);
+    });
+
+    let queue = [start];
+
+    let visited = new Set();
+
+    let parent = {};
+
+    visited.add(start);
+
+    while(queue.length > 0)
+    {
+        let current = queue.shift();
+
+        if(current === destination)
+            break;
+
+        for(let neighbor of (graph[current] || []))
+        {
+            if(!visited.has(neighbor))
+            {
+                visited.add(neighbor);
+
+                parent[neighbor] = current;
+
+                queue.push(neighbor);
+            }
+        }
+    }
+
+    if(!visited.has(destination))
+    {
+        document
+        .getElementById("result")
+        .innerText =
+        "No Path Found";
+
+        return;
+    }
+
+    let path = [];
+
+    let current = destination;
+
+    while(current !== start)
+    {
+        path.push(current);
+
+        current = parent[current];
+    }
+
+    path.push(start);
+
+    path.reverse();
+
+    document
+    .getElementById("result")
+    .innerText =
+    "Shortest Path: " +
+    path.join(" → ");
+
+    path.forEach(
+    (id,index)=>
+    {
+        setTimeout(
+        ()=>{
+            cy
+            .$id(id)
+            .style(
+                'background-color',
+                '#ef4444'
+            );
+        },
+        index*700);
+    });
+
+    console.log(graph);
+}
+
+async function addFriendship()
+{
+    let user1 =
+    document
+    .getElementById("friend1")
+    .value;
+
+    let user2 =
+    document
+    .getElementById("friend2")
+    .value;
+
+    let response =
+    await fetch(
+        "http://127.0.0.1:5000/add_friendship",
+        {
+            method:"POST",
+
+            headers:{
+                "Content-Type":
+                "application/json"
+            },
+
+            body:JSON.stringify({
+                user1:user1,
+                user2:user2
+            })
+        }
+    );
+
+    let result =
+    await response.json();
+
+    alert(result.message);
+
+    loadGraph();
+}
+
+async function recommendFriends()
+{
+    let userId =
+    document.getElementById(
+        "recommendUser"
+    ).value;
+
+    console.log(
+        "Recommendation for:",
+        userId
+    );
+
+    try
+    {
+        let response =
+        await fetch(
+            "http://127.0.0.1:5000/recommend/" +
+            userId
+        );
+
+        console.log(response);
+
+        let data =
+        await response.json();
+
+        console.log(data);
+
+        let output = "";
+
+        let medals = [
+        "🥇",
+        "🥈",
+        "🥉"
+        ];
+
+        data.forEach(
+        (user,index)=>
+        {
+            let medal = "";
+
+            if(index < 3)
+                medal = medals[index];
+
+            output +=
+            `<div style="
+                margin:8px;
+                padding:10px;
+                background:#f8fafc;
+                border-radius:8px;
+                border-left:4px solid #3b82f6;
+            ">
+                ${medal}
+                <b>${user.name}</b>
+                (${user.mutual} mutual friends)
+            </div>`;
+        });
+
+        if(output === "")
+        {
+            output =
+            "No Recommendations";
+        }
+
+        document
+        .getElementById(
+            "recommendationResult"
+        )
+        .innerHTML =
+        output;
+    }
+    catch(error)
+    {
+        console.error(error);
+
+        document
+        .getElementById(
+            "recommendationResult"
+        )
+        .innerHTML =
+        "Error loading recommendations";
+    }
+}
+
+async function removeFriendship()
+{
+    let user1 =
+    document
+    .getElementById(
+    "removeFriend1"
+    ).value;
+
+    let user2 =
+    document
+    .getElementById(
+    "removeFriend2"
+    ).value;
+
+    let response =
+    await fetch(
+    "http://127.0.0.1:5000/remove_friendship",
+    {
+        method:"POST",
+
+        headers:{
+            "Content-Type":
+            "application/json"
+        },
+
+        body:JSON.stringify({
+            user1:user1,
+            user2:user2
+        })
+    });
+
+    let result =
+    await response.json();
+
+    alert(result.message);
+
+    loadGraph();
+}
+
+</script>
+
+</body>
+
+</html>
