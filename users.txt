@@ -1,5 +1,0 @@
-2,Ravi,21,Pune
-1,Gaurav,21,Jodhpur
-6,Chhavi,22,Delhi
-7,Himanshi,23,Jodhpur
-8,Ranjana,50,Jodhpur
