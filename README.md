@@ -33,7 +33,8 @@ social-network-analyzer/
 │ └── style.css
 ├── data/ # Runtime-generated persistence (users.txt, friendships.txt)
 ├── .gitignore
-└── README.md
+├── README.md
+└── social.exe
 
 
 > **Note:** This project currently has hardcoded absolute file paths (e.g. `D:/DSA Projects/Social Network/...`) in `main.cpp`, `SocialGraph.cpp`, `User.cpp`, and `app.py`. These need to be updated to relative paths for the project to build/run correctly outside the original machine/folder setup.
